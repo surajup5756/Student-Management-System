@@ -1,0 +1,118 @@
+
+@startuml
+title Student Management System - UML Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+package "com.weintern.sms" {
+
+    class Student {
+        - static final long serialVersionUID : long
+        - final id : int
+        - name : String
+        - age : int
+        - grade : double
+        - subjects : List<String>
+
+        + Student(id, name, age, grade, subjects)
+        + getId() : int
+        + getName() : String
+        + getAge() : int
+        + getGrade() : double
+        + getSubjects() : List<String>
+        + setName(name) : void
+        + setAge(age) : void
+        + setGrade(grade) : void
+        + setSubjects(subjects) : void
+        + toString() : String
+    }
+
+    class StudentManager {
+        - students : List<Student>
+        - studentsById : Map<Integer, Student>
+        - allocatedIds : Set<Integer>
+        - dataFile : Path
+
+        + StudentManager(dataFile)
+        + addStudent(student) : boolean
+        + getAllStudents() : List<Student>
+        + getAllAllocatedIds() : List<Integer>
+        + getVacantIds() : List<Integer>
+        + findById(id) : Student
+        + searchByName(name) : List<Student>
+        + updateStudent(id, name, age, grade, subjects) : boolean
+        + deleteStudent(id) : boolean
+        + calculateAverageGrade() : double
+        + getStudentsSortedByName() : List<Student>
+        + exportToCsv(outputFile) : void
+        - csv(value) : String
+        - load() : void
+        - save() : void
+    }
+
+    class StudentStore {
+        - static final long serialVersionUID : long
+        - students : List<Student>
+        - reservedIds : Set<Integer>
+
+        + StudentStore(students, allocatedIds)
+        + getStudents() : List<Student>
+        + getReservedIds() : Set<Integer>
+    }
+
+    class InputHelper {
+        - scanner : Scanner
+
+        + InputHelper(scanner)
+        + readNonEmpty(prompt) : String
+        + readOptional(prompt) : String
+        + readInt(prompt, min, max) : int
+        + readDouble(prompt, min, max) : double
+        + readSubjects(prompt) : List<String>
+        + confirm(prompt) : boolean
+    }
+
+    class Main {
+        - static final LINE : String
+
+        + main(args) : void
+        - printMenu(manager) : void
+        - addStudent(input, manager) : void
+        - addStudentDetails(input, manager, id) : void
+        - displayIdAllocation(manager) : void
+        - displayStudents(students, heading) : void
+        - searchStudent(input, manager) : void
+        - updateStudent(input, manager) : void
+        - readOptionalInt(input, current) : Integer
+        - readOptionalDouble(input, current) : Double
+        - deleteStudent(input, manager) : void
+        - exportCsv(input, manager) : void
+    }
+}
+
+' Relationships
+
+Main --> StudentManager : manages
+Main --> InputHelper : uses
+Main ..> Student : creates
+
+StudentManager "1" o-- "*" Student : manages
+StudentManager ..> StudentStore : saves / loads
+
+StudentStore "1" o-- "*" Student : stores
+
+InputHelper ..> Student : validates input for
+
+note right of StudentManager
+  Maintains ACTIVE and VACANT IDs.
+  Deleted IDs remain allocated
+  and can be reused.
+end note
+
+note bottom of StudentStore
+  Serializable storage snapshot
+  of student records and ID slots.
+end note
+
+@enduml
